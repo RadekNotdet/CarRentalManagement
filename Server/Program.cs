@@ -3,13 +3,19 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using CarRentalManagement.Server.Data;
 using CarRentalManagement.Server.Models;
+using Microsoft.AspNetCore.Identity;
+using CarRentalManagement.Server.Interfaces.IRepository;
+using CarRentalManagement.Server.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddSwaggerGen();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -21,6 +27,8 @@ builder.Services.AddIdentityServer()
 builder.Services.AddAuthentication()
     .AddIdentityServerJwt();
 
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -31,6 +39,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
+    });
+
+
 }
 else
 {

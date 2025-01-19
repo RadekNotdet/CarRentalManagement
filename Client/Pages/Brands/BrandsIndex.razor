@@ -1,0 +1,72 @@
+﻿@page "/brands/"
+@inject HttpClient Http
+@inject IJSRuntime js
+@attribute [Authorize]
+@using CarRentalManagement.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using CarRentalManagement.Shared
+
+<h3 class="card-title"> Brands </h3>
+<hr />
+<br />
+
+@if(Brands == null)
+{
+    <div class="alert alert-info">Loading Brands...</div>
+}
+else
+{
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Brands)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                        <a href="brands/view/@item.Id" class="btn btn-primary">
+                            <span class="oi oi-book"></span>
+                        </a>
+                        <a href="brands/edit/@item.Id" class="btn btn-warning">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                        <button class="btn btn-danger" @onclick="@(()=>Delete(item.Id))">
+                            <span class="oi oi-delete"></span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    private List<Brand> Brands;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Brands = await Http.GetFromJsonAsync<List<Brand>>($"{Endpoints.BrandsEndpoints}/all");
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Delete(int brandId)
+    {
+        var brand = Brands.FirstOrDefault(b => b.Id == brandId);
+
+        if (await js.InvokeAsync<bool>("confirm", $"Do you want to delete {brand.Name}")) 
+        {
+            await Http.DeleteAsync($"{Endpoints.BrandsEndpoints}/{brandId}");
+        }
+
+        await OnInitializedAsync();
+    }
+}

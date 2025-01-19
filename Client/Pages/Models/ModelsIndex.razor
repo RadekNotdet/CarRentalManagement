@@ -1,0 +1,72 @@
+﻿@page "/models/"
+@inject HttpClient Http
+@inject IJSRuntime js
+@attribute [Authorize]
+@using CarRentalManagement.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using CarRentalManagement.Shared
+
+<h3 class="card-title"> Models </h3>
+<hr />
+<br />
+
+@if (Models == null)
+{
+    <div class="alert alert-info">Loading Models...</div>
+}
+else
+{
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Models)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                        <a href="brands/view/@item.Id" class="btn btn-primary">
+                            <span class="oi oi-book"></span>
+                        </a>
+                        <a href="brands/edit/@item.Id" class="btn btn-warning">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                        <button class="btn btn-danger" @onclick="@(()=>Delete(item.Id))">
+                            <span class="oi oi-delete"></span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    private List<Model> Models;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Models = await Http.GetFromJsonAsync<List<Model>>($"{Endpoints.ModelsEndpoints}/all") ?? new List<Model>();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Delete(int modelId)
+    {
+        var color = Models.FirstOrDefault(b => b.Id == modelId);
+
+        if (await js.InvokeAsync<bool>("confirm", $"Do you want to delete {color.Name}"))
+        {
+            await Http.DeleteAsync($"{Endpoints.ModelsEndpoints}/{modelId}");
+        }
+
+        await OnInitializedAsync();
+    }
+}
