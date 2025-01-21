@@ -1,0 +1,78 @@
+﻿@page "/vehicles/"
+@inject HttpClient Http
+@inject IJSRuntime js
+@attribute [Authorize]
+@using CarRentalManagement.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using CarRentalManagement.Shared
+
+<h3 class="card-title"> Vehicles </h3>
+<hr />
+<br />
+
+@if (Vehicles == null)
+{
+    <div class="alert alert-info">Loading Vehicles...</div>
+}
+else
+{
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>Daily rate</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in Vehicles)
+            {
+                <tr>
+                    <td>@vehicle.Brand.Name</td>
+                    <td>@vehicle.Model.Name</td>
+                    <td>@vehicle.Year</td>
+                    <td>@vehicle.RentalRate</td>
+                    <td>
+                        <a href="brands/view/@vehicle.Id" class="btn btn-primary">
+                            <span class="oi oi-book"></span>
+                        </a>
+                        <a href="brands/edit/@vehicle.Id" class="btn btn-warning">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                        <button class="btn btn-danger" @onclick="@(()=>Delete(vehicle.Id))">
+                            <span class="oi oi-delete"></span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    private List<Vehicle> Vehicles;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Vehicles = await Http.GetFromJsonAsync<List<Vehicle>>($"{Endpoints.VehiclesEndpoints}/all") ?? new List<Vehicle>();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Delete(int vehicleId)
+    {
+        var vehicle = Vehicles.FirstOrDefault(b => b.Id == vehicleId);
+
+        if (await js.InvokeAsync<bool>("confirm", $"Do you want to delete {vehicle.Model.Name}"))
+        {
+            await Http.DeleteAsync($"{Endpoints.ModelsEndpoints}/{vehicleId}");
+        }
+
+        await OnInitializedAsync();
+    }
+}

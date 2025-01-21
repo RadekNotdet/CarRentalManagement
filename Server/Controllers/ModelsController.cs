@@ -79,12 +79,12 @@ namespace CarRentalManagement.Server.Controllers
 
        
         [HttpPost]
-        public async Task<ActionResult<Color>> PostModel(Model model)
+        public async Task<IActionResult> PostModel(Model model)
         {
             await _unitOfWork.ModelsRepository.InsertAsync(model);
             await _unitOfWork.SaveAsync();
 
-            return CreatedAtAction("GetColor", new { id = model.Id }, model);
+            return CreatedAtAction("GetModel", new { id = model.Id }, model);
         }
 
 

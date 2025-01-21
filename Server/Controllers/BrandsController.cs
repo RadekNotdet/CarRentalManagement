@@ -82,7 +82,7 @@ namespace CarRentalManagement.Server.Controllers
         // POST: api/Brands
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Brand>> PostBrand(Brand brand)
+        public async Task<IActionResult> PostBrand(Brand brand)
         {
             await _unitOfWork.BrandsRepository.InsertAsync(brand);
           
